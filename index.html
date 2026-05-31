@@ -139,6 +139,11 @@ input[type=number]:focus{outline:none;border-color:var(--gd);}
     <div class="ni" data-sec="habits" onclick="showSection('habits')"><span class="ni-ic">✅</span>Daily Habits</div>
     <div class="ni" data-sec="weekplan" onclick="showSection('weekplan')"><span class="ni-ic">📅</span>Weekly Plan</div>
   </div>
+  <div class="ns"><div class="nl">Leads & Appointments</div>
+    <div class="ni" data-sec="leads" onclick="showSection('leads')"><span class="ni-ic">🎯</span>Leads <span id="navLeadsCount" style="font-size:9px;background:rgba(201,168,76,.2);padding:1px 5px;border-radius:8px;margin-left:2px;">0</span></div>
+    <div class="ni" data-sec="calendar" onclick="showSection('calendar')"><span class="ni-ic">📆</span>Appointments</div>
+    <div class="ni" data-sec="followups" onclick="showSection('followups')"><span class="ni-ic">🔄</span>Follow-ups <span id="navFollowupCount" style="font-size:9px;background:rgba(232,82,106,.2);color:#E8526A;padding:1px 5px;border-radius:8px;margin-left:2px;">0</span></div>
+  </div>
   <div class="ns"><div class="nl">Resources</div>
     <div class="ni" data-sec="scripts" onclick="showSection('scripts')"><span class="ni-ic">💬</span>Scripts & Objections</div>
     <div class="ni" data-sec="service" onclick="showSection('service')"><span class="ni-ic">⚙️</span>Service Portal</div>
@@ -497,6 +502,132 @@ input[type=number]:focus{outline:none;border-color:var(--gd);}
   <div style="margin-top:14px;" id="svcLogItems"></div>
 </div>
 
+
+<!-- LEADS MANAGEMENT -->
+<div id="s-leads" class="sec">
+  <div class="sh">
+    <div class="stit">Leads Management</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;">
+      <select class="fs" id="leadSortBy" onchange="renderLeads()">
+        <option value="score">Sort: Priority Score</option>
+        <option value="closeProb">Sort: Close %</option>
+        <option value="importance">Sort: Importance</option>
+        <option value="followUp">Sort: Follow-up Date</option>
+        <option value="name">Sort: Name</option>
+      </select>
+      <button class="btn bg" onclick="openLeadModal()">+ Add Lead</button>
+    </div>
+  </div>
+  <!-- KPI Row -->
+  <div class="g4" style="margin-bottom:14px;">
+    <div class="card csm"><div class="ct2">Total Leads</div><div class="kv" id="lkpi-total" style="color:var(--t);">0</div><div class="ks">All stages</div></div>
+    <div class="card csm"><div class="ct2">Hot Leads</div><div class="kv" id="lkpi-hot" style="color:var(--r);">0</div><div class="ks">Score ≥ 70</div></div>
+    <div class="card csm"><div class="ct2">Warm Leads</div><div class="kv" id="lkpi-warm" style="color:var(--or);">0</div><div class="ks">Score 40–69</div></div>
+    <div class="card csm"><div class="ct2">Est. Pipeline</div><div class="kv" id="lkpi-pipe" style="color:var(--g);">₱0</div><div class="ks">Budget × Close%</div></div>
+  </div>
+  <!-- Filter Bar -->
+  <div class="sb2">
+    <input class="si" id="leadSrch" placeholder="Search name, company, product..." oninput="renderLeads()" style="flex:2;">
+    <select class="fs" id="leadStageFilter" onchange="renderLeads()">
+      <option value="">All Stages</option>
+      <option value="New">New</option>
+      <option value="Contacted">Contacted</option>
+      <option value="Qualified">Qualified</option>
+      <option value="Presented">Presented</option>
+      <option value="Negotiation">Negotiation</option>
+      <option value="Won">Won</option>
+      <option value="Lost">Lost</option>
+    </select>
+    <select class="fs" id="leadTempFilter" onchange="renderLeads()">
+      <option value="">All Priority</option>
+      <option value="hot">🔥 Hot (≥70)</option>
+      <option value="warm">🌤 Warm (40-69)</option>
+      <option value="cold">❄️ Cold (&lt;40)</option>
+    </select>
+  </div>
+  <!-- Lead Cards Grid -->
+  <div id="leadsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:4px;"></div>
+  <div id="leadsEmpty" style="display:none;padding:40px;text-align:center;color:var(--d);font-size:12px;">No leads yet. Click <strong style="color:var(--t);">+ Add Lead</strong> to get started.</div>
+</div>
+
+<!-- APPOINTMENTS CALENDAR -->
+<div id="s-calendar" class="sec">
+  <div class="sh">
+    <div class="stit">Appointments Calendar</div>
+    <div style="display:flex;gap:7px;align-items:center;">
+      <button class="btn bo bsm" onclick="calNav(-1)">‹</button>
+      <span id="calMonthLabel" style="font-size:12px;color:var(--t);min-width:110px;text-align:center;font-family:'Playfair Display',serif;"></span>
+      <button class="btn bo bsm" onclick="calNav(1)">›</button>
+      <button class="btn bg" onclick="openApptModal()">+ Book Appointment</button>
+    </div>
+  </div>
+  <!-- KPI Row -->
+  <div class="g4" style="margin-bottom:14px;">
+    <div class="card csm"><div class="ct2">This Month</div><div class="kv" id="akpi-month" style="color:var(--t);">0</div><div class="ks">Appointments</div></div>
+    <div class="card csm"><div class="ct2">This Week</div><div class="kv" id="akpi-week" style="color:var(--bl);">0</div><div class="ks">Scheduled</div></div>
+    <div class="card csm"><div class="ct2">Today</div><div class="kv" id="akpi-today" style="color:var(--gr);">0</div><div class="ks">Appointments</div></div>
+    <div class="card csm"><div class="ct2">Rescheduled</div><div class="kv" id="akpi-rescheduled" style="color:var(--or);">0</div><div class="ks">All time</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;">
+    <!-- Calendar Grid -->
+    <div class="card" style="padding:14px;">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:8px;">
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">SUN</div>
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">MON</div>
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">TUE</div>
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">WED</div>
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">THU</div>
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">FRI</div>
+        <div style="text-align:center;font-size:9px;color:var(--d);padding:4px;">SAT</div>
+      </div>
+      <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;"></div>
+    </div>
+    <!-- Upcoming List -->
+    <div class="card" style="padding:14px;">
+      <div class="ct2" style="margin-bottom:10px;">Upcoming Appointments</div>
+      <div id="upcomingList" style="max-height:380px;overflow-y:auto;"></div>
+    </div>
+  </div>
+  <!-- Day Detail -->
+  <div id="dayDetail" style="display:none;margin-top:12px;" class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="ct2" id="dayDetailTitle">Appointments for —</div>
+      <button class="btn bo bsm" onclick="document.getElementById('dayDetail').style.display='none'">✕</button>
+    </div>
+    <div id="dayDetailBody"></div>
+  </div>
+</div>
+
+<!-- FOLLOW-UPS & RESCHEDULES -->
+<div id="s-followups" class="sec">
+  <div class="sh">
+    <div class="stit">Follow-ups & Reschedules</div>
+    <button class="btn bg" onclick="openLeadModal()">+ New Lead</button>
+  </div>
+  <div class="g4" style="margin-bottom:14px;">
+    <div class="card csm"><div class="ct2">Overdue</div><div class="kv" id="fkpi-overdue" style="color:var(--r);">0</div><div class="ks">Past follow-up date</div></div>
+    <div class="card csm"><div class="ct2">Due Today</div><div class="kv" id="fkpi-today" style="color:var(--or);">0</div><div class="ks">Action needed now</div></div>
+    <div class="card csm"><div class="ct2">This Week</div><div class="kv" id="fkpi-week" style="color:var(--bl);">0</div><div class="ks">Upcoming follow-ups</div></div>
+    <div class="card csm"><div class="ct2">Rescheduled</div><div class="kv" id="fkpi-rescheduled" style="color:var(--pu);">0</div><div class="ks">Awaiting new date</div></div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <div class="ct2" style="color:var(--r);margin-bottom:8px;">🚨 Overdue Follow-ups</div>
+    <div id="fu-overdue"><div style="color:var(--d);font-size:11px;padding:8px;">No overdue follow-ups.</div></div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <div class="ct2" style="color:var(--or);margin-bottom:8px;">⏰ Due Today</div>
+    <div id="fu-today"><div style="color:var(--d);font-size:11px;padding:8px;">Nothing due today.</div></div>
+  </div>
+  <div class="card" style="margin-bottom:12px;">
+    <div class="ct2" style="color:var(--bl);margin-bottom:8px;">📅 This Week</div>
+    <div id="fu-week"><div style="color:var(--d);font-size:11px;padding:8px;">No follow-ups this week.</div></div>
+  </div>
+  <div class="card">
+    <div class="ct2" style="color:var(--pu);margin-bottom:8px;">🔄 Rescheduled Leads</div>
+    <div id="fu-rescheduled"><div style="color:var(--d);font-size:11px;padding:8px;">No rescheduled leads.</div></div>
+  </div>
+</div>
+
   </div></div>
 
 <!-- CLIENT MODAL -->
@@ -598,9 +729,9 @@ function showSection(id){
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
   const sec=document.getElementById('s-'+id); if(sec) sec.classList.add('on');
   document.querySelectorAll('.ni').forEach(n=>{ if(n.getAttribute('data-sec')===id) n.classList.add('active'); });
-  const titles={dashboard:'Dashboard',clients:'Clients',policies:'All Policies',nurture:'Nurture Board',renewals:'Renewals Tracker',lapse:'Lapse Recovery',pipeline:'Sales Pipeline',upsell:'Upsell Analysis',referral:'Referral System',mdrt:'MDRT Tracker',recruit:'Recruit Pipeline',habits:'Daily Habits',weekplan:'Weekly Plan',scripts:'Scripts & Objections',service:'Service Portal',premdue:'Premiums Due Board'};
+  const titles={dashboard:'Dashboard',clients:'Clients',policies:'All Policies',nurture:'Nurture Board',renewals:'Renewals Tracker',lapse:'Lapse Recovery',pipeline:'Sales Pipeline',upsell:'Upsell Analysis',referral:'Referral System',mdrt:'MDRT Tracker',recruit:'Recruit Pipeline',habits:'Daily Habits',weekplan:'Weekly Plan',scripts:'Scripts & Objections',service:'Service Portal',premdue:'Premiums Due Board',leads:'Leads Management',calendar:'Appointments Calendar',followups:'Follow-ups & Reschedules'};
   document.getElementById('topTitle').textContent=titles[id]||id;
-  const fn={dashboard:refreshDashboardKPIs,clients:initClients,policies:initPolicies,nurture:initNurture,renewals:initRenewals,lapse:initLapse,upsell:initUpsell,referral:initReferral,pipeline:initPipeline,mdrt:initMdrt,recruit:initRecruit,habits:initHabits,weekplan:initWeekplan,scripts:initScripts,service:initService,premdue:initPremDue};
+  const fn={dashboard:refreshDashboardKPIs,clients:initClients,policies:initPolicies,nurture:initNurture,renewals:initRenewals,lapse:initLapse,upsell:initUpsell,referral:initReferral,pipeline:initPipeline,mdrt:initMdrt,recruit:initRecruit,habits:initHabits,weekplan:initWeekplan,scripts:initScripts,service:initService,premdue:initPremDue,leads:initLeads,calendar:initCalendar,followups:initFollowups};
   if(fn[id]) fn[id]();
 }
 
@@ -2965,6 +3096,475 @@ function confirmMapping(){
   document.getElementById('step3Card').scrollIntoView({ behavior: 'smooth' });
 }
 
+// ===================== LEADS & APPOINTMENTS ENGINE =====================
+
+// ── Storage helpers
+function getLeads(){ try{ return JSON.parse(localStorage.getItem('em_leads')||'[]'); }catch(e){return [];} }
+function saveLeads(arr){ localStorage.setItem('em_leads', JSON.stringify(arr)); updateNavBadges(); }
+function getAppts(){ try{ return JSON.parse(localStorage.getItem('em_appts')||'[]'); }catch(e){return [];} }
+function saveAppts(arr){ localStorage.setItem('em_appts', JSON.stringify(arr)); updateNavBadges(); }
+function uuid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+// ── Score & temperature helpers
+function calcScore(importance, closeProb){ return Math.round(importance * closeProb / 10); }
+function getTemp(score){ return score>=70?'hot':score>=40?'warm':'cold'; }
+function tempLabel(score){ return score>=70?'🔥 Hot':score>=40?'🌤 Warm':'❄️ Cold'; }
+function tempColors(score){ return score>=70?{bg:'rgba(232,82,106,.15)',fg:'#E8526A'}:score>=40?{bg:'rgba(245,166,35,.15)',fg:'#F5A623'}:{bg:'rgba(90,107,138,.15)',fg:'#5A6B8A'}; }
+function stageColor(stage){ const m={New:'var(--m)',Contacted:'var(--bl)',Qualified:'var(--or)',Presented:'var(--pu)',Negotiation:'var(--g)',Won:'var(--gr)',Lost:'var(--r)'}; return m[stage]||'var(--m)'; }
+
+// ── Date helpers for leads
+const TDAY = new Date(); TDAY.setHours(0,0,0,0);
+function dateLabel(ds){ if(!ds) return ''; const d=new Date(ds); const diff=Math.round((d-TDAY)/86400000); if(diff===0) return 'Today'; if(diff===1) return 'Tomorrow'; if(diff===-1) return 'Yesterday'; if(diff<0) return `${Math.abs(diff)}d overdue`; return `in ${diff}d`; }
+function isOverdue(ds){ if(!ds) return false; return new Date(ds)<TDAY; }
+function isToday(ds){ if(!ds) return false; const d=new Date(ds); d.setHours(0,0,0,0); return d.getTime()===TDAY.getTime(); }
+function isThisWeek(ds){ if(!ds) return false; const d=new Date(ds); d.setHours(0,0,0,0); const end=new Date(TDAY); end.setDate(end.getDate()+7); return d>=TDAY && d<end; }
+function fmtDate(ds){ if(!ds) return '—'; const d=new Date(ds); return d.toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}); }
+function fmtTime(ts){ if(!ts) return ''; const [h,m]=ts.split(':'); const hr=parseInt(h); return `${hr>12?hr-12:hr||12}:${m} ${hr>=12?'PM':'AM'}`; }
+
+// ── Nav badge updater
+function updateNavBadges(){
+  const leads=getLeads();
+  const appts=getAppts();
+  document.getElementById('navLeadsCount').textContent=leads.filter(l=>l.stage!=='Won'&&l.stage!=='Lost').length;
+  const overdue=leads.filter(l=>l.followUpDate&&isOverdue(l.followUpDate)&&l.stage!=='Won'&&l.stage!=='Lost').length;
+  const el=document.getElementById('navFollowupCount');
+  el.textContent=overdue;
+  el.style.display=overdue>0?'inline':'none';
+}
+
+// ── Score preview in modal
+function updateLeadScore(){
+  const imp=parseInt(document.getElementById('lf-importance').value)||5;
+  const prob=parseInt(document.getElementById('lf-closeprob').value)||50;
+  const score=calcScore(imp,prob);
+  document.getElementById('scoreDisplay').textContent=score;
+  const c=tempColors(score);
+  const badge=document.getElementById('scoreBadge');
+  badge.textContent=tempLabel(score);
+  badge.style.background=c.bg; badge.style.color=c.fg;
+  document.getElementById('scoreDisplay').style.color=c.fg;
+}
+
+// ── Lead Modal
+function openLeadModal(id){
+  const modal=document.getElementById('leadMdl');
+  const isEdit=!!id;
+  document.getElementById('leadMdlTitle').textContent=isEdit?'Edit Lead':'Add Lead';
+  document.getElementById('lf-deleteBtn').style.display=isEdit?'inline-flex':'none';
+  document.getElementById('lf-id').value=id||'';
+  if(isEdit){
+    const lead=getLeads().find(l=>l.id===id);
+    if(!lead) return;
+    document.getElementById('lf-name').value=lead.name||'';
+    document.getElementById('lf-company').value=lead.company||'';
+    document.getElementById('lf-phone').value=lead.phone||'';
+    document.getElementById('lf-email').value=lead.email||'';
+    document.getElementById('lf-source').value=lead.source||'Referral';
+    document.getElementById('lf-product').value=lead.product||'VUL';
+    document.getElementById('lf-budget').value=lead.budget||'';
+    document.getElementById('lf-stage').value=lead.stage||'New';
+    document.getElementById('lf-importance').value=lead.importance||5;
+    document.getElementById('impVal').textContent=lead.importance||5;
+    document.getElementById('lf-closeprob').value=lead.closeProb||50;
+    document.getElementById('probVal').textContent=lead.closeProb||50;
+    document.getElementById('lf-followup').value=lead.followUpDate||'';
+    document.getElementById('lf-nextaction').value=lead.nextAction||'';
+    document.getElementById('lf-notes').value=lead.notes||'';
+  } else {
+    document.getElementById('lf-name').value='';
+    document.getElementById('lf-company').value='';
+    document.getElementById('lf-phone').value='';
+    document.getElementById('lf-email').value='';
+    document.getElementById('lf-source').value='Referral';
+    document.getElementById('lf-product').value='VUL';
+    document.getElementById('lf-budget').value='';
+    document.getElementById('lf-stage').value='New';
+    document.getElementById('lf-importance').value=5;
+    document.getElementById('impVal').textContent=5;
+    document.getElementById('lf-closeprob').value=50;
+    document.getElementById('probVal').textContent=50;
+    document.getElementById('lf-followup').value='';
+    document.getElementById('lf-nextaction').value='';
+    document.getElementById('lf-notes').value='';
+  }
+  updateLeadScore();
+  modal.classList.add('open');
+}
+function closeLeadModal(){ document.getElementById('leadMdl').classList.remove('open'); }
+
+function saveLead(){
+  const name=document.getElementById('lf-name').value.trim();
+  if(!name){ alert('Name is required.'); return; }
+  const id=document.getElementById('lf-id').value||uuid();
+  const imp=parseInt(document.getElementById('lf-importance').value)||5;
+  const prob=parseInt(document.getElementById('lf-closeprob').value)||50;
+  const lead={
+    id,name,
+    company:document.getElementById('lf-company').value.trim(),
+    phone:document.getElementById('lf-phone').value.trim(),
+    email:document.getElementById('lf-email').value.trim(),
+    source:document.getElementById('lf-source').value,
+    product:document.getElementById('lf-product').value,
+    budget:parseFloat(document.getElementById('lf-budget').value)||0,
+    stage:document.getElementById('lf-stage').value,
+    importance:imp,
+    closeProb:prob,
+    score:calcScore(imp,prob),
+    followUpDate:document.getElementById('lf-followup').value,
+    nextAction:document.getElementById('lf-nextaction').value.trim(),
+    notes:document.getElementById('lf-notes').value.trim(),
+    updatedAt:new Date().toISOString(),
+    createdAt:document.getElementById('lf-id').value?(getLeads().find(l=>l.id===document.getElementById('lf-id').value)||{}).createdAt:new Date().toISOString(),
+    rescheduled:false,
+  };
+  const arr=getLeads().filter(l=>l.id!==id);
+  arr.push(lead);
+  saveLeads(arr);
+  closeLeadModal();
+  renderLeads();
+}
+
+function deleteLead(){
+  const id=document.getElementById('lf-id').value;
+  if(!id||!confirm('Delete this lead?')) return;
+  saveLeads(getLeads().filter(l=>l.id!==id));
+  closeLeadModal();
+  renderLeads();
+}
+
+// ── Leads Render
+function initLeads(){ renderLeads(); }
+
+function renderLeads(){
+  const leads=getLeads();
+  const srch=(document.getElementById('leadSrch')?.value||'').toLowerCase();
+  const stageF=document.getElementById('leadStageFilter')?.value||'';
+  const tempF=document.getElementById('leadTempFilter')?.value||'';
+  const sortBy=document.getElementById('leadSortBy')?.value||'score';
+
+  let filtered=leads.filter(l=>{
+    if(srch && !`${l.name} ${l.company} ${l.product} ${l.phone} ${l.email}`.toLowerCase().includes(srch)) return false;
+    if(stageF && l.stage!==stageF) return false;
+    if(tempF && getTemp(l.score)!==tempF) return false;
+    return true;
+  });
+
+  filtered.sort((a,b)=>{
+    if(sortBy==='score') return b.score-a.score;
+    if(sortBy==='closeProb') return b.closeProb-a.closeProb;
+    if(sortBy==='importance') return b.importance-a.importance;
+    if(sortBy==='name') return a.name.localeCompare(b.name);
+    if(sortBy==='followUp'){
+      if(!a.followUpDate) return 1; if(!b.followUpDate) return -1;
+      return new Date(a.followUpDate)-new Date(b.followUpDate);
+    }
+    return 0;
+  });
+
+  // KPIs
+  const hot=leads.filter(l=>l.score>=70).length;
+  const warm=leads.filter(l=>l.score>=40&&l.score<70).length;
+  const pipe=leads.reduce((s,l)=>s+(l.budget*(l.closeProb/100)),0);
+  document.getElementById('lkpi-total').textContent=leads.length;
+  document.getElementById('lkpi-hot').textContent=hot;
+  document.getElementById('lkpi-warm').textContent=warm;
+  document.getElementById('lkpi-pipe').textContent='₱'+Math.round(pipe).toLocaleString('en-PH');
+
+  const grid=document.getElementById('leadsGrid');
+  const empty=document.getElementById('leadsEmpty');
+  if(!filtered.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  grid.innerHTML=filtered.map(l=>{
+    const c=tempColors(l.score);
+    const stc=stageColor(l.stage);
+    const fuOverdue=l.followUpDate&&isOverdue(l.followUpDate)&&l.stage!=='Won'&&l.stage!=='Lost';
+    const fuToday=l.followUpDate&&isToday(l.followUpDate);
+    const appts=getAppts().filter(a=>a.leadId===l.id);
+    const nextAppt=appts.filter(a=>a.status==='Scheduled'&&a.date>=new Date().toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    return `<div class="card" style="border-left:3px solid ${c.fg};padding:13px;cursor:default;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px;">
+        <div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--t);">${l.name}</div>
+          ${l.company?`<div style="font-size:10px;color:var(--d);">${l.company}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+          <div style="font-size:18px;font-family:'Playfair Display',serif;color:${c.fg};">${l.score}</div>
+          <div style="font-size:8.5px;padding:1px 6px;border-radius:8px;background:${c.bg};color:${c.fg};">${tempLabel(l.score)}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px;">
+        <span style="font-size:9px;padding:2px 6px;border-radius:8px;background:var(--nb);color:${stc};">${l.stage}</span>
+        <span style="font-size:9px;padding:2px 6px;border-radius:8px;background:var(--nb);color:var(--m);">${l.product}</span>
+        <span style="font-size:9px;padding:2px 6px;border-radius:8px;background:var(--nb);color:var(--d);">${l.source}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--d);margin-bottom:6px;">
+        <span>Imp: <strong style="color:var(--t);">${l.importance}/10</strong></span>
+        <span>Close: <strong style="color:var(--t);">${l.closeProb}%</strong></span>
+        ${l.budget?`<span>₱${(l.budget).toLocaleString('en-PH')}/yr</span>`:''}
+      </div>
+      ${l.followUpDate?`<div style="font-size:10px;padding:4px 7px;border-radius:6px;background:${fuOverdue?'rgba(232,82,106,.12)':fuToday?'rgba(245,166,35,.12)':'var(--nm)'};color:${fuOverdue?'var(--r)':fuToday?'var(--or)':'var(--d)'};margin-bottom:6px;">
+        📅 Follow-up: ${fmtDate(l.followUpDate)} (${dateLabel(l.followUpDate)})
+      </div>`:''}
+      ${nextAppt?`<div style="font-size:10px;padding:4px 7px;border-radius:6px;background:rgba(91,141,239,.1);color:var(--bl);margin-bottom:6px;">📆 ${nextAppt.title} — ${fmtDate(nextAppt.date)} ${fmtTime(nextAppt.time)}</div>`:''}
+      ${l.nextAction?`<div style="font-size:10px;color:var(--m);margin-bottom:6px;">→ ${l.nextAction}</div>`:''}
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <button class="btn bo bsm" onclick="openLeadModal('${l.id}')">✎ Edit</button>
+        <button class="btn bbl bsm" onclick="openApptModal(null,'${l.id}')">📆 Book</button>
+        ${l.phone?`<a href="tel:${l.phone}" class="btn bgr bsm" style="text-decoration:none;">📞</a>`:''}
+        ${l.email?`<a href="mailto:${l.email}" class="btn bo bsm" style="text-decoration:none;">✉️</a>`:''}
+        <button class="btn bor bsm" onclick="quickReschedule('${l.id}')">🔄</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function quickReschedule(leadId){
+  const newDate=prompt('Enter new follow-up date (YYYY-MM-DD):');
+  if(!newDate) return;
+  const leads=getLeads().map(l=>{
+    if(l.id===leadId){ return {...l, followUpDate:newDate, rescheduled:true, updatedAt:new Date().toISOString()}; }
+    return l;
+  });
+  saveLeads(leads);
+  renderLeads();
+}
+
+// ── CALENDAR
+let calYear=TDAY.getFullYear(), calMonth=TDAY.getMonth();
+const CAL_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const APPT_COLORS={Meeting:'var(--bl)',Call:'var(--gr)',Zoom:'var(--pu)',Presentation:'var(--g)',Followup:'var(--or)','Follow-up':'var(--or)',Closing:'var(--r)'};
+
+function initCalendar(){ renderCalendar(); renderUpcoming(); }
+
+function calNav(dir){ calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+
+function renderCalendar(){
+  document.getElementById('calMonthLabel').textContent=`${CAL_MONTHS[calMonth]} ${calYear}`;
+  const appts=getAppts();
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const todayStr=TDAY.toISOString().slice(0,10);
+  let html='';
+  for(let i=0;i<firstDay;i++) html+=`<div style="min-height:60px;"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayAppts=appts.filter(a=>a.date===ds);
+    const isToday2=ds===todayStr;
+    html+=`<div onclick="showDayDetail('${ds}')" style="min-height:60px;background:${isToday2?'rgba(201,168,76,.1)':'var(--nm)'};border:1px solid ${isToday2?'var(--g)':'var(--nb)'};border-radius:5px;padding:4px;cursor:pointer;transition:all .1s;" onmouseover="this.style.borderColor='var(--gd)'" onmouseout="this.style.borderColor='${isToday2?'var(--g)':'var(--nb)'}'">
+      <div style="font-size:10px;font-weight:600;color:${isToday2?'var(--g)':'var(--m)'};margin-bottom:2px;">${d}</div>
+      ${dayAppts.slice(0,3).map(a=>`<div style="font-size:8.5px;padding:1px 4px;border-radius:3px;background:${APPT_COLORS[a.type]||'var(--bl)'}22;color:${APPT_COLORS[a.type]||'var(--bl)'};margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.title}</div>`).join('')}
+      ${dayAppts.length>3?`<div style="font-size:8px;color:var(--d);">+${dayAppts.length-3} more</div>`:''}
+    </div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+
+  // KPIs
+  const now=new Date();
+  const weekEnd=new Date(now); weekEnd.setDate(now.getDate()+7);
+  const monthStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+  document.getElementById('akpi-month').textContent=appts.filter(a=>a.date.startsWith(monthStr)).length;
+  document.getElementById('akpi-week').textContent=appts.filter(a=>a.date>=todayStr&&a.date<=weekEnd.toISOString().slice(0,10)).length;
+  document.getElementById('akpi-today').textContent=appts.filter(a=>a.date===todayStr).length;
+  document.getElementById('akpi-rescheduled').textContent=appts.filter(a=>a.status==='Rescheduled').length;
+}
+
+function showDayDetail(ds){
+  const appts=getAppts().filter(a=>a.date===ds).sort((a,b)=>a.time.localeCompare(b.time));
+  const d=new Date(ds+'T00:00');
+  document.getElementById('dayDetailTitle').textContent=`Appointments — ${d.toLocaleDateString('en-PH',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}`;
+  if(!appts.length){
+    document.getElementById('dayDetailBody').innerHTML=`<div style="color:var(--d);font-size:11px;padding:8px;">No appointments. <span style="color:var(--bl);cursor:pointer;" onclick="openApptModal(null,null,'${ds}')">+ Book one</span></div>`;
+  } else {
+    document.getElementById('dayDetailBody').innerHTML=appts.map(a=>renderApptRow(a)).join('');
+  }
+  const panel=document.getElementById('dayDetail');
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth'});
+}
+
+function renderApptRow(a){
+  const lead=a.leadId?getLeads().find(l=>l.id===a.leadId):null;
+  const col=APPT_COLORS[a.type]||'var(--bl)';
+  return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 10px;background:var(--nm);border-radius:7px;margin-bottom:6px;border-left:3px solid ${col};">
+    <div style="flex:1;">
+      <div style="font-size:11.5px;font-weight:600;color:var(--t);">${a.title}</div>
+      <div style="font-size:10px;color:var(--d);margin-top:2px;">${a.type} · ${fmtTime(a.time)} · ${a.duration} min${a.location?' · '+a.location:''}</div>
+      ${lead?`<div style="font-size:10px;color:var(--bl);margin-top:2px;">Lead: ${lead.name}</div>`:''}
+      ${a.notes?`<div style="font-size:10px;color:var(--m);margin-top:2px;">${a.notes}</div>`:''}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+      <span style="font-size:9px;padding:2px 6px;border-radius:8px;background:${a.status==='Completed'?'rgba(46,204,138,.15)':a.status==='Cancelled'?'rgba(232,82,106,.15)':a.status==='Rescheduled'?'rgba(245,166,35,.15)':'rgba(91,141,239,.15)'};color:${a.status==='Completed'?'var(--gr)':a.status==='Cancelled'?'var(--r)':a.status==='Rescheduled'?'var(--or)':'var(--bl)'};">${a.status}</span>
+      <button class="btn bo bsm" onclick="openApptModal('${a.id}')">✎</button>
+    </div>
+  </div>`;
+}
+
+function renderUpcoming(){
+  const todayStr=TDAY.toISOString().slice(0,10);
+  const appts=getAppts().filter(a=>a.date>=todayStr&&a.status==='Scheduled').sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)).slice(0,15);
+  const el=document.getElementById('upcomingList');
+  if(!appts.length){ el.innerHTML=`<div style="color:var(--d);font-size:11px;padding:8px;">No upcoming appointments.</div>`; return; }
+  el.innerHTML=appts.map(a=>{
+    const lead=a.leadId?getLeads().find(l=>l.id===a.leadId):null;
+    const col=APPT_COLORS[a.type]||'var(--bl)';
+    return `<div style="padding:8px 10px;background:var(--nm);border-radius:7px;margin-bottom:5px;border-left:2px solid ${col};cursor:pointer;" onclick="showDayDetail('${a.date}')">
+      <div style="font-size:11px;font-weight:600;color:var(--t);">${a.title}</div>
+      <div style="font-size:9.5px;color:var(--d);">${fmtDate(a.date)} · ${fmtTime(a.time)}</div>
+      ${lead?`<div style="font-size:9.5px;color:var(--bl);">${lead.name}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── Appointment Modal
+function openApptModal(id, leadId, prefDate){
+  const modal=document.getElementById('apptMdl');
+  const isEdit=!!id;
+  document.getElementById('apptMdlTitle').textContent=isEdit?'Edit Appointment':'Book Appointment';
+  document.getElementById('af-deleteBtn').style.display=isEdit?'inline-flex':'none';
+  document.getElementById('af-rescheduleBtn').style.display=isEdit?'inline-flex':'none';
+  document.getElementById('af-id').value=id||'';
+
+  // Populate lead dropdown
+  const leads=getLeads().filter(l=>l.stage!=='Won'&&l.stage!=='Lost');
+  const leadSel=document.getElementById('af-lead');
+  leadSel.innerHTML=`<option value="">— No lead linked —</option>`+leads.map(l=>`<option value="${l.id}">${l.name}${l.company?' ('+l.company+')':''}</option>`).join('');
+
+  if(isEdit){
+    const a=getAppts().find(x=>x.id===id);
+    if(!a) return;
+    document.getElementById('af-title').value=a.title||'';
+    leadSel.value=a.leadId||'';
+    document.getElementById('af-type').value=a.type||'Meeting';
+    document.getElementById('af-date').value=a.date||'';
+    document.getElementById('af-time').value=a.time||'10:00';
+    document.getElementById('af-duration').value=a.duration||60;
+    document.getElementById('af-status').value=a.status||'Scheduled';
+    document.getElementById('af-location').value=a.location||'';
+    document.getElementById('af-notes').value=a.notes||'';
+  } else {
+    document.getElementById('af-title').value='';
+    leadSel.value=leadId||'';
+    if(leadId){ const l=getLeads().find(x=>x.id===leadId); if(l) document.getElementById('af-title').value=`Meeting with ${l.name}`; }
+    document.getElementById('af-type').value='Meeting';
+    document.getElementById('af-date').value=prefDate||TDAY.toISOString().slice(0,10);
+    document.getElementById('af-time').value='10:00';
+    document.getElementById('af-duration').value=60;
+    document.getElementById('af-status').value='Scheduled';
+    document.getElementById('af-location').value='';
+    document.getElementById('af-notes').value='';
+  }
+  modal.classList.add('open');
+}
+function closeApptModal(){ document.getElementById('apptMdl').classList.remove('open'); }
+
+function saveAppt(){
+  const title=document.getElementById('af-title').value.trim();
+  const date=document.getElementById('af-date').value;
+  if(!title||!date){ alert('Title and date are required.'); return; }
+  const id=document.getElementById('af-id').value||uuid();
+  const leadId=document.getElementById('af-lead').value;
+  const appt={
+    id, title, leadId,
+    type:document.getElementById('af-type').value,
+    date, time:document.getElementById('af-time').value,
+    duration:parseInt(document.getElementById('af-duration').value)||60,
+    status:document.getElementById('af-status').value,
+    location:document.getElementById('af-location').value.trim(),
+    notes:document.getElementById('af-notes').value.trim(),
+    createdAt:document.getElementById('af-id').value?(getAppts().find(a=>a.id===document.getElementById('af-id').value)||{}).createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
+  };
+  const arr=getAppts().filter(a=>a.id!==id);
+  arr.push(appt);
+  saveAppts(arr);
+  closeApptModal();
+  if(document.getElementById('s-calendar').classList.contains('on')){ renderCalendar(); renderUpcoming(); }
+  if(document.getElementById('s-leads').classList.contains('on')) renderLeads();
+}
+
+function deleteAppt(){
+  const id=document.getElementById('af-id').value;
+  if(!id||!confirm('Delete this appointment?')) return;
+  saveAppts(getAppts().filter(a=>a.id!==id));
+  closeApptModal();
+  renderCalendar(); renderUpcoming();
+}
+
+function rescheduleAppt(){
+  const newDate=prompt('Enter new date (YYYY-MM-DD):');
+  if(!newDate) return;
+  const newTime=prompt('Enter new time (HH:MM):',document.getElementById('af-time').value)||document.getElementById('af-time').value;
+  const id=document.getElementById('af-id').value;
+  const appts=getAppts().map(a=>{
+    if(a.id===id) return {...a,date:newDate,time:newTime,status:'Rescheduled',updatedAt:new Date().toISOString()};
+    return a;
+  });
+  saveAppts(appts);
+  closeApptModal();
+  renderCalendar(); renderUpcoming();
+}
+
+// ── Follow-ups
+function initFollowups(){ renderFollowups(); }
+
+function renderFollowups(){
+  const leads=getLeads();
+  const todayStr=TDAY.toISOString().slice(0,10);
+  const weekEnd=new Date(TDAY); weekEnd.setDate(TDAY.getDate()+7);
+  const weekEndStr=weekEnd.toISOString().slice(0,10);
+
+  const overdue=leads.filter(l=>l.followUpDate&&l.followUpDate<todayStr&&l.stage!=='Won'&&l.stage!=='Lost').sort((a,b)=>a.followUpDate.localeCompare(b.followUpDate));
+  const today2=leads.filter(l=>l.followUpDate===todayStr&&l.stage!=='Won'&&l.stage!=='Lost');
+  const thisWeek=leads.filter(l=>l.followUpDate>todayStr&&l.followUpDate<=weekEndStr&&l.stage!=='Won'&&l.stage!=='Lost').sort((a,b)=>a.followUpDate.localeCompare(b.followUpDate));
+  const rescheduled=leads.filter(l=>l.rescheduled&&l.stage!=='Won'&&l.stage!=='Lost');
+
+  document.getElementById('fkpi-overdue').textContent=overdue.length;
+  document.getElementById('fkpi-today').textContent=today2.length;
+  document.getElementById('fkpi-week').textContent=thisWeek.length;
+  document.getElementById('fkpi-rescheduled').textContent=rescheduled.length;
+
+  function renderFuList(arr, elId){
+    const el=document.getElementById(elId);
+    if(!arr.length){ el.innerHTML=`<div style="color:var(--d);font-size:11px;padding:8px;">None.</div>`; return; }
+    el.innerHTML=arr.map(l=>{
+      const c=tempColors(l.score);
+      const appts=getAppts().filter(a=>a.leadId===l.id&&a.status==='Scheduled');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--nm);border-radius:7px;margin-bottom:5px;border-left:3px solid ${c.fg};">
+        <div style="flex:1;">
+          <div style="font-size:11.5px;font-weight:600;color:var(--t);">${l.name} <span style="font-size:9px;padding:1px 5px;border-radius:8px;background:${c.bg};color:${c.fg};margin-left:4px;">${tempLabel(l.score)}</span></div>
+          <div style="font-size:10px;color:var(--d);margin-top:2px;">${l.stage}${l.company?' · '+l.company:''} · Follow-up: <strong style="color:var(--t);">${fmtDate(l.followUpDate)}</strong></div>
+          ${l.nextAction?`<div style="font-size:10px;color:var(--m);margin-top:2px;">→ ${l.nextAction}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+          <div style="font-size:16px;font-family:'Playfair Display',serif;color:${c.fg};">${l.score}</div>
+          <div style="display:flex;gap:4px;">
+            <button class="btn bo bsm" onclick="openLeadModal('${l.id}')">✎</button>
+            <button class="btn bor bsm" onclick="quickReschedule('${l.id}')">🔄</button>
+            <button class="btn bbl bsm" onclick="openApptModal(null,'${l.id}')">📆</button>
+            ${l.phone?`<a href="tel:${l.phone}" class="btn bgr bsm" style="text-decoration:none;">📞</a>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  renderFuList(overdue,'fu-overdue');
+  renderFuList(today2,'fu-today');
+  renderFuList(thisWeek,'fu-week');
+  renderFuList(rescheduled,'fu-rescheduled');
+}
+
+// ── Add CSS for calendar cells
+(function(){
+  const s=document.createElement('style');
+  s.textContent=`.cal-day:hover{border-color:var(--gd)!important;}`;
+  document.head.appendChild(s);
+})();
+
+// ── Init on load
+window.addEventListener('DOMContentLoaded', ()=>{ updateNavBadges(); });
+
 // ── Parse CSV helper
 function parseCSVText(text){
   const lines = text.trim().split('\n');
@@ -3010,6 +3610,184 @@ function downloadSampleCSV(){
     <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
       <button class="btn bo bsm" onclick="closeHabitEditor()">Cancel</button>
       <button class="btn bg bsm" onclick="saveHabitsAndClose()">✓ Save Habits</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD MODAL -->
+<div class="mdl" id="leadMdl">
+  <div class="mb2" style="max-width:720px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="mt2" id="leadMdlTitle">Add Lead</div>
+      <button class="btn bo bsm" onclick="closeLeadModal()">✕ Close</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Full Name *</div>
+        <input class="si" id="lf-name" placeholder="e.g. Juan dela Cruz" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Company / Employer</div>
+        <input class="si" id="lf-company" placeholder="e.g. BDO Unibank" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Phone</div>
+        <input class="si" id="lf-phone" placeholder="09XX XXX XXXX" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Email</div>
+        <input class="si" id="lf-email" placeholder="email@example.com" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Lead Source</div>
+        <select class="fs" id="lf-source" style="width:100%;">
+          <option value="Referral">Referral</option>
+          <option value="Cold Call">Cold Call</option>
+          <option value="Social Media">Social Media</option>
+          <option value="Walk-in">Walk-in</option>
+          <option value="Event">Event</option>
+          <option value="Existing Client">Existing Client</option>
+          <option value="Online Inquiry">Online Inquiry</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Product Interest</div>
+        <select class="fs" id="lf-product" style="width:100%;">
+          <option value="VUL">VUL (e.g. Sun Flexilink)</option>
+          <option value="Traditional">Traditional Insurance</option>
+          <option value="Term">Term Insurance</option>
+          <option value="Health">Health/Medical</option>
+          <option value="Accident">Accident Rider</option>
+          <option value="Multiple">Multiple Products</option>
+          <option value="Unsure">Unsure / Needs FNA</option>
+        </select>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Budget / Capacity (₱/yr)</div>
+        <input class="si" id="lf-budget" type="number" placeholder="e.g. 50000" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Stage</div>
+        <select class="fs" id="lf-stage" style="width:100%;">
+          <option value="New">New</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Qualified">Qualified</option>
+          <option value="Presented">Presented</option>
+          <option value="Negotiation">Negotiation</option>
+          <option value="Won">Won</option>
+          <option value="Lost">Lost</option>
+        </select>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Importance (1–10) <span id="impVal" style="color:var(--g);">5</span></div>
+        <input type="range" id="lf-importance" min="1" max="10" value="5" style="width:100%;accent-color:var(--g);" oninput="document.getElementById('impVal').textContent=this.value;updateLeadScore()">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--d);margin-top:2px;"><span>Low priority</span><span>High priority</span></div>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Close Probability (%) <span id="probVal" style="color:var(--g);">50</span>%</div>
+        <input type="range" id="lf-closeprob" min="0" max="100" value="50" style="width:100%;accent-color:var(--g);" oninput="document.getElementById('probVal').textContent=this.value;updateLeadScore()">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--d);margin-top:2px;"><span>0%</span><span>100%</span></div>
+      </div>
+    </div>
+    <!-- Score Preview -->
+    <div id="scorePreview" style="background:var(--nm);border-radius:8px;padding:10px 14px;margin:10px 0;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:11px;color:var(--m);">Priority Score:</div>
+      <div id="scoreDisplay" style="font-size:22px;font-family:'Playfair Display',serif;color:var(--g);">50</div>
+      <div id="scoreBadge" style="font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(245,166,35,.15);color:var(--or);">🌤 Warm Lead</div>
+      <div style="font-size:10px;color:var(--d);margin-left:auto;">Importance × Close% ÷ 10</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Follow-up Date</div>
+        <input class="si" id="lf-followup" type="date" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Next Action</div>
+        <input class="si" id="lf-nextaction" placeholder="e.g. Send proposal, Schedule meeting" style="width:100%;">
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <div class="ct2" style="margin-bottom:4px;">Notes</div>
+      <textarea class="ta2" id="lf-notes" placeholder="Lead context, objections, personal details..." style="min-height:70px;width:100%;"></textarea>
+    </div>
+    <input type="hidden" id="lf-id">
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button class="btn brd bsm" id="lf-deleteBtn" onclick="deleteLead()" style="display:none;margin-right:auto;">🗑 Delete Lead</button>
+      <button class="btn bo" onclick="closeLeadModal()">Cancel</button>
+      <button class="btn bg" onclick="saveLead()">✓ Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPOINTMENT MODAL -->
+<div class="mdl" id="apptMdl">
+  <div class="mb2" style="max-width:580px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="mt2" id="apptMdlTitle">Book Appointment</div>
+      <button class="btn bo bsm" onclick="closeApptModal()">✕ Close</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="grid-column:1/-1;">
+        <div class="ct2" style="margin-bottom:4px;">Appointment Title *</div>
+        <input class="si" id="af-title" placeholder="e.g. FNA Meeting with Juan dela Cruz" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Linked Lead</div>
+        <select class="fs" id="af-lead" style="width:100%;"><option value="">— No lead linked —</option></select>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Type</div>
+        <select class="fs" id="af-type" style="width:100%;">
+          <option value="Meeting">In-Person Meeting</option>
+          <option value="Call">Phone Call</option>
+          <option value="Zoom">Video Call / Zoom</option>
+          <option value="Presentation">Presentation</option>
+          <option value="Follow-up">Follow-up</option>
+          <option value="Closing">Closing Meeting</option>
+        </select>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Date *</div>
+        <input class="si" id="af-date" type="date" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Time</div>
+        <input class="si" id="af-time" type="time" value="10:00" style="width:100%;">
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Duration (minutes)</div>
+        <select class="fs" id="af-duration" style="width:100%;">
+          <option value="30">30 min</option>
+          <option value="60" selected>1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+        </select>
+      </div>
+      <div>
+        <div class="ct2" style="margin-bottom:4px;">Status</div>
+        <select class="fs" id="af-status" style="width:100%;">
+          <option value="Scheduled">Scheduled</option>
+          <option value="Completed">Completed</option>
+          <option value="Rescheduled">Rescheduled</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1;">
+        <div class="ct2" style="margin-bottom:4px;">Location / Link</div>
+        <input class="si" id="af-location" placeholder="e.g. Coffee Bean Ayala, Zoom link..." style="width:100%;">
+      </div>
+      <div style="grid-column:1/-1;">
+        <div class="ct2" style="margin-bottom:4px;">Notes</div>
+        <textarea class="ta2" id="af-notes" placeholder="Agenda, preparation notes..." style="min-height:60px;width:100%;"></textarea>
+      </div>
+    </div>
+    <input type="hidden" id="af-id">
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;">
+      <button class="btn brd bsm" id="af-deleteBtn" onclick="deleteAppt()" style="display:none;margin-right:auto;">🗑 Delete</button>
+      <button class="btn bor bsm" id="af-rescheduleBtn" onclick="rescheduleAppt()" style="display:none;">🔄 Reschedule</button>
+      <button class="btn bo" onclick="closeApptModal()">Cancel</button>
+      <button class="btn bg" onclick="saveAppt()">✓ Save</button>
     </div>
   </div>
 </div>
